@@ -5,11 +5,15 @@ from keras.layers import Dense, Activation
 from keras.optimizers import SGD
 from keras.utils import np_utils
 
+# This perceptron is going to be very similar to the perceptron_2,
+# except that it will have hidden layers (like an onion) to enhance its capabilities.
+
+
 # to reproduce results, you probably knew that already...
 np.random.seed(1671)
 
 # building the network
-NB_EPOCH = 200
+NB_EPOCH = 20
 BATCH_SIZE = 128
 VERBOSE = 1
 # number of possible outputs == number of digits, i.e. |[0-9]|
@@ -45,7 +49,14 @@ Y_test = np_utils.to_categorical(y_test, NB_CLASSES)
 # final layer is softmax activation function
 # 10 output classes, one for each digit
 model = Sequential()
-model.add(Dense(NB_CLASSES, input_shape=(RESHAPED,)))
+
+# after input, now have first dense layer with N_HIDDEN neurons and activation function 'relu'.
+# a hidden layer is not directly connected to the input or output layer.
+model.add(Dense(N_HIDDEN, input_shape=(RESHAPED,)))
+model.add(Activation('relu'))
+model.add(Dense(N_HIDDEN))
+model.add(Activation('relu'))
+model.add(Dense(NB_CLASSES))
 model.add(Activation('softmax'))
 model.summary()
 
@@ -70,5 +81,5 @@ print("Test score: ", score[0])
 print("Test accuracy ", score[1])
 
 # after run results:
-# Test score:  0.27738585292994977
-# Test accuracy  0.9227
+# Test score:  0.1860022947922349
+# Test accuracy  0.946
