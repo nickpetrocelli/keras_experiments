@@ -17,6 +17,8 @@ from keras.utils import np_utils
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from keras.optimizers import SGD, Adam, RMSprop
+import tempfile
+import shutil
 import matplotlib.pyplot as plt
 
 # augmentation param
@@ -33,7 +35,7 @@ BATCH_SIZE = 128
 VERBOSE = 1
 OPTIMIZER = RMSprop()
 VALIDATION_SPLIT = 0.2
-NB_EPOCH = 20
+NB_EPOCH = 50
 NB_CLASSES = 10
 
 # load dataset
@@ -54,11 +56,13 @@ datagen = ImageDataGenerator(
 )
 
 xtas, ytas = [], []
+tmpdir = tempfile.mkdtemp()
+print('Temp directory: ', tmpdir)
 for i in range(X_train.shape[0]):
     num_aug = 0
     x = X_train[i] # (3, 32, 32)
     x = x.reshape((1,) + x.shape) # (1, 3, 32, 32)
-    for x_aug in datagen.flow(x, batch_size=1, save_to_dir='preview', save_prefix='cifar', save_format='jpeg'):
+    for x_aug in datagen.flow(x, batch_size=1, save_to_dir=tmpdir, save_prefix='cifar', save_format='jpeg'):
         if num_aug >= NUM_TO_AUGMENT:
             break
         xtas.append(x_aug[0])
@@ -112,8 +116,10 @@ print("Test accuracy: ", score[1])
 
 # save to JSON
 model_json = model.to_json()
-with open('cifar10_architecture.json', 'w') as f:
+dir = 'cifar10_3_model'
+with open(os.path.join(dir, 'cifar10_architecture.json'), 'w') as f:
     f.write(model_json)
-model.save_weights('cifar10_weights.h5', overwrite=True)
+model.save_weights(os.path.join(dir, 'cifar10_weights.h5'), overwrite=True)
 
-
+# cleanup
+shutil.rmtree(tmpdir)
